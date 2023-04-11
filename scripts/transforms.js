@@ -15,7 +15,6 @@ function mat4x4Perspective(prp, srp, vup, clip) {
   };
   let shear = new Matrix(4, 4);
   let DOP = Vector3(CW.x, CW.y, CW.z);
-  console.log(DOP);
 
   let shx = -DOP.x / DOP.z;
   let shy = -DOP.y / DOP.z;
@@ -31,16 +30,16 @@ function mat4x4Perspective(prp, srp, vup, clip) {
   // ...
   // let transform = Matrix.multiply([...]);
   let transform = Matrix.multiply([scale, shear, rotate, translateToOrigin]);
-  console.log('Matrices:\n');
-  console.log('T: ');
-  console.log(translateToOrigin);
-  console.log('R: ');
-  console.log(rotate);
-  console.log('SH: ');
-  console.log(shear);
-  console.log('S: ');
-  console.log(scale);
-  console.log('2');
+  // console.log('Matrices:\n');
+  // console.log('T: ');
+  // console.log(translateToOrigin);
+  // console.log('R: ');
+  // console.log(rotate);
+  // console.log('SH: ');
+  // console.log(shear);
+  // console.log('S: ');
+  // console.log(scale);
+  // console.log('2');
   return transform;
 }
 
