@@ -83,6 +83,10 @@ function init() {
           [3, 8],
           [4, 9],
         ],
+        animation: {
+          rps: 0.05,
+          transform: mat4x4Identity(new Matrix(4, 4)),
+        },
       },
     ],
   };
