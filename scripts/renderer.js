@@ -15,7 +15,7 @@ class Renderer {
     this.canvas.height = canvas.height;
     this.ctx = this.canvas.getContext('2d');
     this.scene = this.processScene(scene);
-    this.enable_animation = false; // <-- disabled for easier debugging; enable for animation
+    this.enable_animation = true; // <-- disabled for easier debugging; enable for animation
     this.start_time = null;
     this.prev_time = null;
   }
@@ -23,11 +23,42 @@ class Renderer {
   //
   updateTransforms(time, delta_time) {
     // TODO: update any transformations needed for animation
-    let Nper = mat4x4Perspective(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup, this.scene.view.clip);
-    let MNper = Matrix.multiply([mat4x4MPer(), Nper]);
-    // console.log(Nper);
-    // console.log(MNper);
-    // console.log(this.scene);
+
+    for (let i = 0; i < this.scene.models.length; i++) {
+      if (this.scene.models[i].hasOwnProperty('animation')) {
+        //find center
+        let center;
+        if (this.scene.models[i].type === 'generic') {
+          center = this.findCenter(this.scene.models[i].vertices);
+        } else {
+          console.log('else center: ');
+          console.log(this.scene.models[i].center);
+          center = this.scene.models[i].center;
+        }
+        //components of transfrom matrix
+        let translateToOrigin = new Matrix(4, 4);
+        let translateFromOrigin = new Matrix(4, 4);
+        let rotate = new Matrix(4, 4);
+        // console.log(center);
+
+        //translations to and from origin
+        mat4x4Translate(translateToOrigin, -center.x, -center.y, -center.z);
+        mat4x4Translate(translateFromOrigin, center.x, center.y, center.z);
+
+        //how far the model should have rotated
+        let revs = (this.scene.models[i].animation.rps * time) / 1000;
+        mat4x4RotateY(rotate, revs * (2 * Math.PI));
+
+        //final translate matrix
+        this.scene.models[i].animation.transform = Matrix.multiply([translateFromOrigin, rotate, translateToOrigin]);
+        // console.log(this.scene.models[i].animation.transform);
+
+        // //apply to all verteces
+        // for(let j = 0; j < this.scene.models[i].vertices.length; j++) {
+        //     this.scene.models[i].vertices[j] = this.scene.models[i].vertices[j]
+        // }
+      }
+    }
   }
 
   //
@@ -83,7 +114,8 @@ class Renderer {
         this.scene.models[idx].vertices[i].z,
         this.scene.models[idx].vertices[i].w
       );
-      cannonical_vertices[i] = Matrix.multiply([cannonical, vertex]);
+      let animation = this.scene.models[idx].animation.transform;
+      cannonical_vertices[i] = Matrix.multiply([cannonical, animation, vertex]);
     }
     //clipping
     let c_index = 0;
@@ -323,7 +355,7 @@ class Renderer {
   // x1:           float (x coordinate of p1)
   // y1:           float (y coordinate of p1)
   drawLine(x0, y0, x1, y1) {
-    console.log('x0: ' + x0 + ', y0: ' + y0 + ', x1: ' + x1 + ', y1: ' + y1);
+    // console.log('x0: ' + x0 + ', y0: ' + y0 + ', x1: ' + x1 + ', y1: ' + y1);
     this.ctx.strokeStyle = '#000000';
     this.ctx.beginPath();
     this.ctx.moveTo(x0, y0);
@@ -333,5 +365,19 @@ class Renderer {
     this.ctx.fillStyle = '#FF0000';
     this.ctx.fillRect(x0 - 2, y0 - 2, 4, 4);
     this.ctx.fillRect(x1 - 2, y1 - 2, 4, 4);
+  }
+
+  findCenter(vertices) {
+    console.log(vertices);
+    let sumX = 0;
+    let sumY = 0;
+    let sumZ = 0;
+    for (let i = 0; i < vertices.length; i++) {
+      sumX += vertices[i].x;
+      sumY += vertices[i].y;
+      sumZ += vertices[i].z;
+    }
+
+    return { x: sumX / vertices.length, y: sumY / vertices.length, z: sumZ / vertices.length };
   }
 }
