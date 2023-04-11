@@ -23,12 +23,11 @@ class Renderer {
   //
   updateTransforms(time, delta_time) {
     // TODO: update any transformations needed for animation
-    console.log('1');
     let Nper = mat4x4Perspective(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup, this.scene.view.clip);
-    console.log('3');
     let MNper = Matrix.multiply([mat4x4MPer(), Nper]);
-    console.log(Nper);
-    console.log(MNper);
+    // console.log(Nper);
+    // console.log(MNper);
+    // console.log(this.scene);
   }
 
   //
@@ -54,6 +53,7 @@ class Renderer {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     console.log('draw()');
+    // console.log(this.scene);
 
     // TODO: implement drawing here!
     // For each model
@@ -64,6 +64,80 @@ class Renderer {
     //     * project to 2D
     //     * translate/scale to viewport (i.e. window)
     //     * draw line
+
+    //model index
+    let idx = 0;
+    // transform to cannonical view volume
+    let cannonical = mat4x4Perspective(
+      this.scene.view.prp,
+      this.scene.view.srp,
+      this.scene.view.vup,
+      this.scene.view.clip
+    );
+    let cannonical_vertices = [];
+    //apply to vertices
+    for (let i = 0; i < this.scene.models[idx].vertices.length; i++) {
+      let vertex = Vector4(
+        this.scene.models[idx].vertices[i].x,
+        this.scene.models[idx].vertices[i].y,
+        this.scene.models[idx].vertices[i].z,
+        this.scene.models[idx].vertices[i].w
+      );
+      cannonical_vertices[i] = Matrix.multiply([cannonical, vertex]);
+    }
+    //clipping
+    let c_index = 0;
+    let clipped_vertices = [];
+    for (let i = 0; i < this.scene.models[idx].edges.length; i++) {
+      //first point
+      let pt0 = cannonical_vertices[this.scene.models[idx].edges[i][0]];
+      for (let j = 1; j < this.scene.models[idx].edges[i].length; j++) {
+        //second point
+        let pt1 = cannonical_vertices[this.scene.models[idx].edges[i][j]];
+        //edge to be clipped
+        let edge = {
+          pt0: { x: pt0.data[0], y: pt0.data[1], z: pt0.data[2] },
+          pt1: { x: pt1.data[0], y: pt1.data[1], z: pt1.data[2] },
+        };
+        let clipped_line = this.clipLinePerspective(edge, -(this.scene.view.clip[4] / this.scene.view.clip[5]));
+        //if line is within view, convert to matrix
+        if (clipped_line) {
+          let v1 = Vector4(clipped_line.pt0.x, clipped_line.pt0.y, clipped_line.pt0.z, 1);
+          let v2 = Vector4(clipped_line.pt1.x, clipped_line.pt1.y, clipped_line.pt1.z, 1);
+          clipped_vertices[c_index++] = v1;
+          clipped_vertices[c_index++] = v2;
+        }
+        //next point
+        pt0 = pt1;
+      }
+    }
+
+    //multiply by m_per
+    let final_vertices = [];
+    for (let i = 0; i < clipped_vertices.length; i++) {
+      let calc = Matrix.multiply([mat4x4MPer(), clipped_vertices[i]]);
+
+      //divide by w
+      let vertex = Vector4(
+        [calc.values[0][0] / calc.values[3][0]],
+        [calc.values[1][0] / calc.values[3][0]],
+        [calc.values[2][0] / 1],
+        [1]
+      );
+      final_vertices[i] = vertex;
+    }
+
+    //convert to viewport and draw
+    for (let i = 0; i < final_vertices.length; i += 2) {
+      let converted_vertex1 = Matrix.multiply([mat4x4Viewport(view.width, view.height), final_vertices[i]]);
+      let converted_vertex2 = Matrix.multiply([mat4x4Viewport(view.width, view.height), final_vertices[i + 1]]);
+      this.drawLine(
+        converted_vertex1.values[0],
+        converted_vertex1.values[1],
+        converted_vertex2.values[0],
+        converted_vertex2.values[1]
+      );
+    }
   }
 
   // Get outcode for a vertex
@@ -97,11 +171,74 @@ class Renderer {
     let result = null;
     let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z);
     let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
-    let out0 = outcodePerspective(p0, z_min);
-    let out1 = outcodePerspective(p1, z_min);
+    let out0 = this.outcodePerspective(p0, z_min);
+    let out1 = this.outcodePerspective(p1, z_min);
 
     // TODO: implement clipping here!
 
+    //while we cant trivial accept/reject
+    while (!result) {
+      if (out0 === 0 && out1 === 0) {
+        //trivial accept
+        result = { pt0: p0, pt1: p1 };
+        break;
+      } else if (out0 & (out1 !== 0)) {
+        //trivial reject
+        break;
+      } else {
+        let curOutCode;
+        if (out0 === 0) {
+          //pt0 is inside frustum
+          curOutCode = out1;
+        } else if (out1 === 0) {
+          //pt1 is inside frustum
+          curOutCode = out0;
+        } else {
+          //both outside, begin with first code
+          curOutCode = out0;
+        }
+
+        //deltas
+        let dx = p1.x - p0.x;
+        let dy = p1.y - p0.y;
+        let dz = p1.z - p0.z;
+        let t;
+
+        //clip against first edge
+        if ((curOutCode & LEFT) == LEFT) {
+          //clip against left edge
+          t = (-p0.x + p0.z) / (dx - dz);
+        } else if ((curOutCode & RIGHT) == RIGHT) {
+          //clip against right edge
+          t = (p0.x + p0.z) / (-dx - dz);
+        } else if ((curOutCode & BOTTOM) == BOTTOM) {
+          //clip against bottom edge
+          t = (-p0.y + p0.z) / (dy - dz);
+        } else if ((curOutCode & TOP) == TOP) {
+          //clip against top edge
+          t = (p0.y + p0.z) / (-dy - dz);
+        } else if ((curOutCode & NEAR) == NEAR) {
+          //clip against near edge
+          t = (p0.z - z_min) / -dz;
+        } else if ((curOutCode & FAR) == FAR) {
+          //clip against far edge
+          t = (-p0.z - 1) / dz;
+        }
+        let x = p0.x + t * dx;
+        let y = p0.y + t * dy;
+        let z = p0.z + t * dz;
+        //update point
+        if (curOutCode === out0) {
+          //update p0 and out0
+          p0 = Vector3(x, y, z);
+          out0 = this.outcodePerspective(p0, z_min);
+        } else {
+          //update p1 and out1
+          p1 = Vector3(x, y, z);
+          out1 = this.outcodePerspective(p1, z_min);
+        }
+      }
+    }
     return result;
   }
 
@@ -186,6 +323,7 @@ class Renderer {
   // x1:           float (x coordinate of p1)
   // y1:           float (y coordinate of p1)
   drawLine(x0, y0, x1, y1) {
+    console.log('x0: ' + x0 + ', y0: ' + y0 + ', x1: ' + x1 + ', y1: ' + y1);
     this.ctx.strokeStyle = '#000000';
     this.ctx.beginPath();
     this.ctx.moveTo(x0, y0);
