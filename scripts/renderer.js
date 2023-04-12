@@ -385,30 +385,48 @@ class Renderer {
           shape = this.generateCube(shapeChar.center, shapeChar.width, shapeChar.height, shapeChar.depth)
           shapeVertices = shape.vertices;
           shapeEdges = shape.edges;
+        } if (shapeChar.type == "cone") {
+          shape = this.generateCone(shapeChar.center, shapeChar.radius, shapeChar.height, shapeChar.sides)
+          shapeVertices = shape.vertices;
+          shapeEdges = shape.edges;
+        } if (shapeChar.type == "cylinder") {
+          shape = this.generateCylinder(shapeChar.center, shapeChar.radius, shapeChar.height, shapeChar.sides)
+          shapeVertices = shape.vertices;
+          shapeEdges = shape.edges;
+        } if (shapeChar.type == "sphere") {
+          shape = this.generateSphere(shapeChar.center, shapeChar.radius, shapeChar.slices, shapeChar.stacks)
+          shapeVertices = shape.vertices;
+          shapeEdges = shape.edges;
         }
-        
+      } else {
+        shapeVertices = shapeChar.vertices;
+        shapeEdges = shapeChar.edges;
       }
 
       //apply to vertices
-      for (let i = 0; i < this.scene.models[idx].vertices.length; i++) {
+      for (let i = 0; i < shapeVertices.length; i++) {
         let vertex = Vector4(
-          this.scene.models[idx].vertices[i].x,
-          this.scene.models[idx].vertices[i].y,
-          this.scene.models[idx].vertices[i].z,
-          this.scene.models[idx].vertices[i].w
+          shapeVertices[i].x,
+          shapeVertices[i].y,
+          shapeVertices[i].z,
+          shapeVertices[i].w
         );
-        let animation = this.scene.models[idx].animation.transform;
-        cannonical_vertices[i] = Matrix.multiply([cannonical, animation, vertex]);
+        if (shapeChar.hasOwnProperty('animation')) {
+          let animation = shapeChar.animation.transform;
+          cannonical_vertices[i] = Matrix.multiply([cannonical, animation, vertex]);
+        } else {
+          cannonical_vertices[i] = Matrix.multiply([cannonical, vertex]);
+        }
       }
       //clipping
       let c_index = 0;
       let clipped_vertices = [];
-      for (let i = 0; i < this.scene.models[idx].edges.length; i++) {
+      for (let i = 0; i < shapeEdges.length; i++) {
         //first point
-        let pt0 = cannonical_vertices[this.scene.models[idx].edges[i][0]];
-        for (let j = 1; j < this.scene.models[idx].edges[i].length; j++) {
+        let pt0 = cannonical_vertices[shapeEdges[i][0]];
+        for (let j = 1; j < shapeEdges[i].length; j++) {
           //second point
-          let pt1 = cannonical_vertices[this.scene.models[idx].edges[i][j]];
+          let pt1 = cannonical_vertices[shapeEdges[i][j]];
           //edge to be clipped
           let edge = {
             pt0: { x: pt0.data[0], y: pt0.data[1], z: pt0.data[2] },
@@ -653,6 +671,7 @@ class Renderer {
 
   // Generate vertices and edges for cube
   generateCube(center, width, height, depth) {
+    console.log("Cube")
     // Calculate the coordinates of the eight vertices of the cube
     let halfWidth = width / 2;
     let halfHeight = height / 2;
@@ -696,9 +715,13 @@ class Renderer {
   }
 
   // Generate vertices and edges for cone
+  generateCone(center, radius, height, sides) {
+
+  }
 
   // Generate vertices and edges for cylinder
   generateCylinder(center, radius, height, sides) {
+    console.log("Cylinder")
     let vertices = [];
     let edges = [];
   
@@ -726,7 +749,9 @@ class Renderer {
     return { vertices: vertices, edges: edges };
   }
   // Generate vertices and edges for sphere
+  generateSphere(center, radius, slices, stacks) {
 
+  }
   // Find center for generic
   findCenter(vertices) {
     console.log(vertices);
