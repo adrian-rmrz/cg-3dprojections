@@ -156,7 +156,11 @@ class Renderer {
         this.scene.models[idx].vertices[i].z,
         this.scene.models[idx].vertices[i].w
       );
-      let animation = this.scene.models[idx].animation.transform;
+      let identity = new Matrix(4, 4);
+      mat4x4Identity(identity);
+      let animation = this.scene.models[idx].animation.hasOwnProperty('transform')
+        ? this.scene.models[idx].animation.transform
+        : identity;
       cannonical_vertices[i] = Matrix.multiply([cannonical, animation, vertex]);
     }
     //clipping
