@@ -85,8 +85,9 @@ function init() {
         ],
         animation: {
           rps: 0.05,
-          axis: "z",
-          transform: mat4x4Identity(new Matrix(4, 4)),
+          axis: 'y',
+          //   transform: mat4x4Identity(new Matrix(4, 4)),
+
         },
       },
     ],

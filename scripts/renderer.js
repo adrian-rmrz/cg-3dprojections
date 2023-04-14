@@ -44,7 +44,7 @@ class Renderer {
         mat4x4Translate(translateToOrigin, -center.x, -center.y, -center.z);
         mat4x4Translate(translateFromOrigin, center.x, center.y, center.z);
 
-        //how far the model should have rotated
+        //how far to rotate
         let revs = (this.scene.models[i].animation.rps * time) / 1000;
         if (this.scene.models[i].animation.axis == "x") {
           mat4x4RotateX(rotate, revs * (2 * Math.PI));
@@ -52,73 +52,58 @@ class Renderer {
           mat4x4RotateY(rotate, revs * (2 * Math.PI));
         } else {
           mat4x4RotateZ(rotate, revs * (2 * Math.PI));
-        }
-        
+        }      
 
         //final translate matrix
         this.scene.models[i].animation.transform = Matrix.multiply([translateFromOrigin, rotate, translateToOrigin]);
-        // console.log(this.scene.models[i].animation.transform);
-
-        // //apply to all verteces
-        // for(let j = 0; j < this.scene.models[i].vertices.length; j++) {
-        //     this.scene.models[i].vertices[j] = this.scene.models[i].vertices[j]
-        // }
       }
     }
   }
 
-  // Left key is pressed
+  //
   rotateLeft() {
+    console.log(this.scene.view.prp);
+    let n = Vector3(
+      this.scene.view.srp.x - this.scene.view.prp.x,
+      this.scene.view.srp.y - this.scene.view.prp.y,
+      this.scene.view.srp.z - this.scene.view.prp.z
+    );
+    n.normalize();
+    console.log(n);
 
+    let vup = Vector3(this.scene.view.vup.x, this.scene.view.vup.y, this.scene.view.vup.z);
+    let cross = vup.cross(n);
+    cross.normalize();
+    let u = Vector3(cross.x, cross.y, cross.z);
+    u.normalize();
+
+    this.scene.view.srp.x += u.x;
+    this.scene.view.srp.y += u.y;
+    this.scene.view.srp.z += u.z;
   }
 
-  // Right key is pressed
+  //
   rotateRight() {
-    console.log("rotate right")
-    let srp = this.scene.view.srp
-    let prp = this.scene.view.prp
-    let vup = this.scene.view.vup
-    console.log("SRP: " + srp.values)
-    console.log("PRP: " + prp.values)
+    console.log(this.scene.view.prp);
+    let n = Vector3(
+      this.scene.view.prp.x - this.scene.view.srp.x,
+      this.scene.view.prp.y - this.scene.view.srp.y,
+      this.scene.view.prp.z - this.scene.view.srp.z
+    );
+    n.normalize();
+    console.log(n);
 
-    // Rotate VRC such that (u,v,n) align with (x,y,z)
-    let rotate = rotateVRC(prp, srp, vup);
-    let nAxis = [rotate.values[2][0], rotate.values[2][1], rotate.values[2][2]]
+    let vup = Vector3(this.scene.view.vup.x, this.scene.view.vup.y, this.scene.view.vup.z);
+    let cross = vup.cross(n);
+    cross.normalize();
+    // console.log('cross');
+    // console.log(cross);
+    let u = Vector3(cross.x, cross.y, cross.z);
+    // u.normalize();
 
-    // Translate SRP to origin
-    let translateToOrigin = new Matrix(4, 4);
-    mat4x4Translate(translateToOrigin, -prp[0], -prp[1], -prp[2]);
-    let translateFromOrigin = new Matrix(4, 4);
-    mat4x4Translate(translateFromOrigin, prp[0], prp[1], prp[2]);
-    //console.log("transSRP: " + translateToOrigin.values)
-
-    // Convert to homogenous coordinates
-    let temp4 = new Matrix(4,1)
-    temp4.values = [
-      [srp.values[0]],
-      [srp.values[1]],
-      [srp.values[2]],
-      [1]
-    ]
-    console.log("temp4: " + temp4.values)
-
-    // Rotate SRP
-    let rotationMatrixX = new Matrix(4,4)
-    let rotationMatrixY = new Matrix(4,4)
-    let rotationMatrixZ = new Matrix(4,4)
-    mat4x4RotateX(rotationMatrixX, 1)
-    mat4x4RotateY(rotationMatrixY, 1)
-    mat4x4RotateZ(rotationMatrixZ, 1)
-
-    let rotation = Matrix.multiply([translateFromOrigin, rotationMatrixZ, rotationMatrixY, rotationMatrixX, temp4])
-
-    this.scene.view.srp.values = [
-      [rotation.values[0][0]/rotation.values[3][0]],
-      [rotation.values[1][0]/rotation.values[3][0]],
-      [rotation.values[2][0]/rotation.values[3][0]]
-    ]
-
-    this.draw()
+    this.scene.view.srp.x += u.x;
+    this.scene.view.srp.y += u.y;
+    this.scene.view.srp.z += u.z;
   }
 
   // A key is pressed
@@ -754,7 +739,7 @@ class Renderer {
   }
   // Find center for generic
   findCenter(vertices) {
-    console.log(vertices);
+    // console.log(vertices);
     let sumX = 0;
     let sumY = 0;
     let sumZ = 0;
