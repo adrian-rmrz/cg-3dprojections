@@ -46,13 +46,13 @@ class Renderer {
 
         //how far to rotate
         let revs = (this.scene.models[i].animation.rps * time) / 1000;
-        if (this.scene.models[i].animation.axis == "x") {
+        if (this.scene.models[i].animation.axis == 'x') {
           mat4x4RotateX(rotate, revs * (2 * Math.PI));
-        } else if (this.scene.models[i].animation == "y") {
+        } else if (this.scene.models[i].animation.axis == 'y') {
           mat4x4RotateY(rotate, revs * (2 * Math.PI));
         } else {
           mat4x4RotateZ(rotate, revs * (2 * Math.PI));
-        }      
+        }
 
         //final translate matrix
         this.scene.models[i].animation.transform = Matrix.multiply([translateFromOrigin, rotate, translateToOrigin]);
@@ -108,226 +108,226 @@ class Renderer {
 
   // A key is pressed
   moveLeft() {
-    console.log("left")
-    console.log("PRP Before: " + this.scene.view.prp.values)
+    console.log('left');
+    console.log('PRP Before: ' + this.scene.view.prp.values);
 
     // Rotate VRC such that (u,v,n) align with (x,y,z)
-    let rotV = rotateVRC(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup)
+    let rotV = rotateVRC(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup);
 
     // Create translate matrix
     let leftMat = new Matrix(4, 4);
-    mat4x4Translate(leftMat, -1*rotV.values[0][0], -1*rotV.values[0][1], -1*rotV.values[0][2])
-    console.log("leftMat after: " + leftMat.values)
+    mat4x4Translate(leftMat, -1 * rotV.values[0][0], -1 * rotV.values[0][1], -1 * rotV.values[0][2]);
+    console.log('leftMat after: ' + leftMat.values);
 
     // Convert PRP and SRP to 4x1 matrix to multiply
-    let prp4 = new Matrix(4, 1)
+    let prp4 = new Matrix(4, 1);
     prp4.values = [
       [this.scene.view.prp.values[0]],
       [this.scene.view.prp.values[1]],
       [this.scene.view.prp.values[2]],
-      [1]
-    ]
+      [1],
+    ];
 
-    let srp4 = new Matrix(4, 1)
+    let srp4 = new Matrix(4, 1);
     srp4.values = [
       [this.scene.view.srp.values[0]],
       [this.scene.view.srp.values[1]],
       [this.scene.view.srp.values[2]],
-      [1]
-    ]
+      [1],
+    ];
 
     // Multiply PRP and SRP by transform matrix
-    prp4 = leftMat.mult(prp4)
-    srp4 = leftMat.mult(srp4)
+    prp4 = leftMat.mult(prp4);
+    srp4 = leftMat.mult(srp4);
 
-    console.log("PRP4 After: " + prp4.values)
+    console.log('PRP4 After: ' + prp4.values);
 
     // Set transformed PRP and SRP values
     this.scene.view.prp.values = [
-      [prp4.values[0][0]/prp4.values[3][0]],
-      [prp4.values[1][0]/prp4.values[3][0]],
-      [prp4.values[2][0]/prp4.values[3][0]]
-    ]
+      [prp4.values[0][0] / prp4.values[3][0]],
+      [prp4.values[1][0] / prp4.values[3][0]],
+      [prp4.values[2][0] / prp4.values[3][0]],
+    ];
 
-    console.log("SRP4 After: " + srp4.values)
+    console.log('SRP4 After: ' + srp4.values);
     this.scene.view.srp.values = [
-      [srp4.values[0][0]/srp4.values[3][0]],
-      [srp4.values[1][0]/srp4.values[3][0]],
-      [srp4.values[2][0]/srp4.values[3][0]]
-    ]
+      [srp4.values[0][0] / srp4.values[3][0]],
+      [srp4.values[1][0] / srp4.values[3][0]],
+      [srp4.values[2][0] / srp4.values[3][0]],
+    ];
 
-    console.log("PRP After: " + this.scene.view.prp.values)
-    console.log("SRP After: " + this.scene.view.srp.values)
+    console.log('PRP After: ' + this.scene.view.prp.values);
+    console.log('SRP After: ' + this.scene.view.srp.values);
 
-    this.draw()
+    this.draw();
   }
 
   // D key is pressed
   moveRight() {
-    console.log("right")
-    console.log("PRP Before: " + this.scene.view.prp.values)
+    console.log('right');
+    console.log('PRP Before: ' + this.scene.view.prp.values);
 
     // Rotate VRC such that (u,v,n) align with (x,y,z)
-    let rotV = rotateVRC(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup)
+    let rotV = rotateVRC(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup);
 
     // Create translate matrix
     let rightMat = new Matrix(4, 4);
-    mat4x4Translate(rightMat, rotV.values[0][0], rotV.values[0][1], rotV.values[0][2])
-    console.log("rightMat after: " + rightMat.values)
+    mat4x4Translate(rightMat, rotV.values[0][0], rotV.values[0][1], rotV.values[0][2]);
+    console.log('rightMat after: ' + rightMat.values);
 
     // Convert PRP and SRP to 4x1 matrix to multiply
-    let prp4 = new Matrix(4, 1)
+    let prp4 = new Matrix(4, 1);
     prp4.values = [
       [this.scene.view.prp.values[0]],
       [this.scene.view.prp.values[1]],
       [this.scene.view.prp.values[2]],
-      [1]
-    ]
+      [1],
+    ];
 
-    let srp4 = new Matrix(4, 1)
+    let srp4 = new Matrix(4, 1);
     srp4.values = [
       [this.scene.view.srp.values[0]],
       [this.scene.view.srp.values[1]],
       [this.scene.view.srp.values[2]],
-      [1]
-    ]
+      [1],
+    ];
 
     // Multiply PRP and SRP by transform matrix
-    prp4 = rightMat.mult(prp4)
-    srp4 = rightMat.mult(srp4)
+    prp4 = rightMat.mult(prp4);
+    srp4 = rightMat.mult(srp4);
 
-    console.log("PRP4 After: " + prp4.values)
+    console.log('PRP4 After: ' + prp4.values);
 
     // Set transformed PRP and SRP values
     this.scene.view.prp.values = [
-      [prp4.values[0][0]/prp4.values[3][0]],
-      [prp4.values[1][0]/prp4.values[3][0]],
-      [prp4.values[2][0]/prp4.values[3][0]]
-    ]
+      [prp4.values[0][0] / prp4.values[3][0]],
+      [prp4.values[1][0] / prp4.values[3][0]],
+      [prp4.values[2][0] / prp4.values[3][0]],
+    ];
 
-    console.log("SRP4 After: " + srp4.values)
+    console.log('SRP4 After: ' + srp4.values);
     this.scene.view.srp.values = [
-      [srp4.values[0][0]/srp4.values[3][0]],
-      [srp4.values[1][0]/srp4.values[3][0]],
-      [srp4.values[2][0]/srp4.values[3][0]]
-    ]
+      [srp4.values[0][0] / srp4.values[3][0]],
+      [srp4.values[1][0] / srp4.values[3][0]],
+      [srp4.values[2][0] / srp4.values[3][0]],
+    ];
 
-    console.log("PRP After: " + this.scene.view.prp.values)
-    console.log("SRP After: " + this.scene.view.srp.values)
+    console.log('PRP After: ' + this.scene.view.prp.values);
+    console.log('SRP After: ' + this.scene.view.srp.values);
 
-    this.draw()
+    this.draw();
   }
 
   // S key is pressed
   moveBackward() {
-    console.log("forward")
-    console.log("PRP Before: " + this.scene.view.prp.values)
+    console.log('forward');
+    console.log('PRP Before: ' + this.scene.view.prp.values);
 
     // Rotate VRC such that (u,v,n) align with (x,y,z)
-    let rotV = rotateVRC(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup)
+    let rotV = rotateVRC(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup);
 
     // Create translate matrix
     let backMat = new Matrix(4, 4);
-    mat4x4Translate(backMat, -1*rotV.values[2][0], -1*rotV.values[2][1], -1*rotV.values[2][2])
-    console.log("backMat after: " + backMat.values)
+    mat4x4Translate(backMat, -1 * rotV.values[2][0], -1 * rotV.values[2][1], -1 * rotV.values[2][2]);
+    console.log('backMat after: ' + backMat.values);
 
     // Convert PRP and SRP to 4x1 matrix to multiply
-    let prp4 = new Matrix(4, 1)
+    let prp4 = new Matrix(4, 1);
     prp4.values = [
       [this.scene.view.prp.values[0]],
       [this.scene.view.prp.values[1]],
       [this.scene.view.prp.values[2]],
-      [1]
-    ]
+      [1],
+    ];
 
-    let srp4 = new Matrix(4, 1)
+    let srp4 = new Matrix(4, 1);
     srp4.values = [
       [this.scene.view.srp.values[0]],
       [this.scene.view.srp.values[1]],
       [this.scene.view.srp.values[2]],
-      [1]
-    ]
+      [1],
+    ];
 
     // Multiply PRP and SRP by transform matrix
-    prp4 = backMat.mult(prp4)
-    srp4 = backMat.mult(srp4)
+    prp4 = backMat.mult(prp4);
+    srp4 = backMat.mult(srp4);
 
-    console.log("PRP4 After: " + prp4.values)
+    console.log('PRP4 After: ' + prp4.values);
 
     // Set transformed PRP and SRP values
     this.scene.view.prp.values = [
-      [prp4.values[0][0]/prp4.values[3][0]],
-      [prp4.values[1][0]/prp4.values[3][0]],
-      [prp4.values[2][0]/prp4.values[3][0]]
-    ]
+      [prp4.values[0][0] / prp4.values[3][0]],
+      [prp4.values[1][0] / prp4.values[3][0]],
+      [prp4.values[2][0] / prp4.values[3][0]],
+    ];
 
-    console.log("SRP4 After: " + srp4.values)
+    console.log('SRP4 After: ' + srp4.values);
     this.scene.view.srp.values = [
-      [srp4.values[0][0]/srp4.values[3][0]],
-      [srp4.values[1][0]/srp4.values[3][0]],
-      [srp4.values[2][0]/srp4.values[3][0]]
-    ]
+      [srp4.values[0][0] / srp4.values[3][0]],
+      [srp4.values[1][0] / srp4.values[3][0]],
+      [srp4.values[2][0] / srp4.values[3][0]],
+    ];
 
-    console.log("PRP After: " + this.scene.view.prp.values)
-    console.log("SRP After: " + this.scene.view.srp.values)
+    console.log('PRP After: ' + this.scene.view.prp.values);
+    console.log('SRP After: ' + this.scene.view.srp.values);
 
-    this.draw()
+    this.draw();
   }
 
   // W key is pressed
   moveForward() {
-    console.log("backward")
-    console.log("PRP Before: " + this.scene.view.prp.values)
+    console.log('backward');
+    console.log('PRP Before: ' + this.scene.view.prp.values);
 
     // Rotate VRC such that (u,v,n) align with (x,y,z)
-    let rotV = rotateVRC(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup)
+    let rotV = rotateVRC(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup);
 
     // Create translate matrix
     let foreMat = new Matrix(4, 4);
-    mat4x4Translate(foreMat, rotV.values[2][0], rotV.values[2][1], rotV.values[2][2])
-    console.log("foreMat after: " + foreMat.values)
+    mat4x4Translate(foreMat, rotV.values[2][0], rotV.values[2][1], rotV.values[2][2]);
+    console.log('foreMat after: ' + foreMat.values);
 
     // Convert PRP and SRP to 4x1 matrix to multiply
-    let prp4 = new Matrix(4, 1)
+    let prp4 = new Matrix(4, 1);
     prp4.values = [
       [this.scene.view.prp.values[0]],
       [this.scene.view.prp.values[1]],
       [this.scene.view.prp.values[2]],
-      [1]
-    ]
+      [1],
+    ];
 
-    let srp4 = new Matrix(4, 1)
+    let srp4 = new Matrix(4, 1);
     srp4.values = [
       [this.scene.view.srp.values[0]],
       [this.scene.view.srp.values[1]],
       [this.scene.view.srp.values[2]],
-      [1]
-    ]
+      [1],
+    ];
 
     // Multiply PRP and SRP by transform matrix
-    prp4 = foreMat.mult(prp4)
-    srp4 = foreMat.mult(srp4)
+    prp4 = foreMat.mult(prp4);
+    srp4 = foreMat.mult(srp4);
 
-    console.log("PRP4 After: " + prp4.values)
+    console.log('PRP4 After: ' + prp4.values);
 
     // Set transformed PRP and SRP values
     this.scene.view.prp.values = [
-      [prp4.values[0][0]/prp4.values[3][0]],
-      [prp4.values[1][0]/prp4.values[3][0]],
-      [prp4.values[2][0]/prp4.values[3][0]]
-    ]
+      [prp4.values[0][0] / prp4.values[3][0]],
+      [prp4.values[1][0] / prp4.values[3][0]],
+      [prp4.values[2][0] / prp4.values[3][0]],
+    ];
 
-    console.log("SRP4 After: " + srp4.values)
+    console.log('SRP4 After: ' + srp4.values);
     this.scene.view.srp.values = [
-      [srp4.values[0][0]/srp4.values[3][0]],
-      [srp4.values[1][0]/srp4.values[3][0]],
-      [srp4.values[2][0]/srp4.values[3][0]]
-    ]
+      [srp4.values[0][0] / srp4.values[3][0]],
+      [srp4.values[1][0] / srp4.values[3][0]],
+      [srp4.values[2][0] / srp4.values[3][0]],
+    ];
 
-    console.log("PRP After: " + this.scene.view.prp.values)
-    console.log("SRP After: " + this.scene.view.srp.values)
+    console.log('PRP After: ' + this.scene.view.prp.values);
+    console.log('SRP After: ' + this.scene.view.srp.values);
 
-    this.draw()
+    this.draw();
   }
 
   //
@@ -357,29 +357,32 @@ class Renderer {
       this.scene.view.clip
     );
 
-    for (idx = 0; idx < this.scene.models.length; idx++) {    
+    for (idx = 0; idx < this.scene.models.length; idx++) {
       let cannonical_vertices = [];
       let shapeVertices = [];
       let shapeEdges = [];
       let shapeChar = this.scene.models[idx];
 
-      if (shapeChar.type != "generic") {
+      if (shapeChar.type != 'generic') {
         let shape;
 
-        if (shapeChar.type == "cube") {
-          shape = this.generateCube(shapeChar.center, shapeChar.width, shapeChar.height, shapeChar.depth)
+        if (shapeChar.type == 'cube') {
+          shape = this.generateCube(shapeChar.center, shapeChar.width, shapeChar.height, shapeChar.depth);
           shapeVertices = shape.vertices;
           shapeEdges = shape.edges;
-        } if (shapeChar.type == "cone") {
-          shape = this.generateCone(shapeChar.center, shapeChar.radius, shapeChar.height, shapeChar.sides)
+        }
+        if (shapeChar.type == 'cone') {
+          shape = this.generateCone(shapeChar.center, shapeChar.radius, shapeChar.height, shapeChar.sides);
           shapeVertices = shape.vertices;
           shapeEdges = shape.edges;
-        } if (shapeChar.type == "cylinder") {
-          shape = this.generateCylinder(shapeChar.center, shapeChar.radius, shapeChar.height, shapeChar.sides)
+        }
+        if (shapeChar.type == 'cylinder') {
+          shape = this.generateCylinder(shapeChar.center, shapeChar.radius, shapeChar.height, shapeChar.sides);
           shapeVertices = shape.vertices;
           shapeEdges = shape.edges;
-        } if (shapeChar.type == "sphere") {
-          shape = this.generateSphere(shapeChar.center, shapeChar.radius, shapeChar.slices, shapeChar.stacks)
+        }
+        if (shapeChar.type == 'sphere') {
+          shape = this.generateSphere(shapeChar.center, shapeChar.radius, shapeChar.slices, shapeChar.stacks);
           shapeVertices = shape.vertices;
           shapeEdges = shape.edges;
         }
@@ -390,12 +393,7 @@ class Renderer {
 
       //apply to vertices
       for (let i = 0; i < shapeVertices.length; i++) {
-        let vertex = Vector4(
-          shapeVertices[i].x,
-          shapeVertices[i].y,
-          shapeVertices[i].z,
-          shapeVertices[i].w
-        );
+        let vertex = Vector4(shapeVertices[i].x, shapeVertices[i].y, shapeVertices[i].z, shapeVertices[i].w);
         if (shapeChar.hasOwnProperty('animation')) {
           let animation = shapeChar.animation.transform;
           cannonical_vertices[i] = Matrix.multiply([cannonical, animation, vertex]);
@@ -656,14 +654,14 @@ class Renderer {
 
   // Generate vertices and edges for cube
   generateCube(center, width, height, depth) {
-    console.log("Cube")
+    console.log('Cube');
     // Calculate the coordinates of the eight vertices of the cube
     let halfWidth = width / 2;
     let halfHeight = height / 2;
     let halfDepth = depth / 2;
-    let centerX = center.values[0]
-    let centerY = center.values[1]
-    let centerZ = center.values[2]
+    let centerX = center.values[0];
+    let centerY = center.values[1];
+    let centerZ = center.values[2];
 
     // Calculate vertices
     let vertex1 = [centerX - halfWidth, centerY + halfHeight, centerZ - halfDepth];
@@ -680,36 +678,26 @@ class Renderer {
       [0, 1, 2, 3, 0], // bottom face
       [4, 5, 6, 7, 4], // top face
       [0, 4], // connecting edges
-      [1, 5], 
-      [2, 6], 
-      [3, 7], 
+      [1, 5],
+      [2, 6],
+      [3, 7],
     ];
 
     return {
-      vertices: [
-        vertex1, 
-        vertex2, 
-        vertex3, 
-        vertex4, 
-        vertex5, 
-        vertex6, 
-        vertex7, 
-        vertex8],
+      vertices: [vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8],
       edges,
     };
   }
 
   // Generate vertices and edges for cone
-  generateCone(center, radius, height, sides) {
-
-  }
+  generateCone(center, radius, height, sides) {}
 
   // Generate vertices and edges for cylinder
   generateCylinder(center, radius, height, sides) {
-    console.log("Cylinder")
+    console.log('Cylinder');
     let vertices = [];
     let edges = [];
-  
+
     // Create the vertices
     for (let i = 0; i < sides; i++) {
       let angle = (2 * Math.PI * i) / sides;
@@ -717,11 +705,11 @@ class Renderer {
       let y = center[1] + height / 2;
       let z = center[2] + radius * Math.sin(angle);
       vertices.push([x, y, z]);
-  
+
       y = center[1] - height / 2;
       vertices.push([x, y, z]);
     }
-  
+
     // Create the edges
     for (let i = 0; i < sides; i++) {
       let a = i * 2;
@@ -730,13 +718,11 @@ class Renderer {
       edges.push([a + 1, b + 1]);
       edges.push([a, a + 1]);
     }
-  
+
     return { vertices: vertices, edges: edges };
   }
   // Generate vertices and edges for sphere
-  generateSphere(center, radius, slices, stacks) {
-
-  }
+  generateSphere(center, radius, slices, stacks) {}
   // Find center for generic
   findCenter(vertices) {
     // console.log(vertices);
